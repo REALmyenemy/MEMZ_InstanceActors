@@ -209,7 +209,7 @@ if (Imported.ME_CopyActor)
 				x=Number.parseInt(x);
 				y=Number.parseInt(y);
 				
-				$gameActors.actor(y).generateActor(x, args.splice(2));
+				$gameActors.actor(y).generateActor(x, MEMZ_IA_GetParams(args));
 				
 			}
 		}
@@ -220,7 +220,6 @@ if (Imported.ME_CopyActor)
 	Game_Actor.prototype.generateActor = function(target,array=MEMZ_IA_generateParams())
 	{
 		this.copyActor(target);
-		this._instanceActorId=$gameInstanceActors.length;
 		this._bv = array;
 		for (var i = 0;i<this._bv.length;i++)
 		{
@@ -256,6 +255,27 @@ if (Imported.ME_CopyActor)
 				MEMZ_IA_getParam("maxagi"),
 				MEMZ_IA_getParam("minluck"),
 				MEMZ_IA_getParam("maxluck")];
+	};
+
+	function MEMZ_IA_GetParams(args)
+	{ // hacer 0 defaults
+		
+		return [args["minhp"]|0,
+				args["maxhp"]|0,
+				args["minmp"]|0,
+				args["maxmp"]|0,
+				args["minatk"]|0,
+				args["maxatk"]|0,
+				args["mindef"]|0,
+				args["maxdef"]|0,
+				args["minmat"]|0,
+				args["maxmat"]|0,
+				args["minmde"]|0,
+				args["maxmde"]|0,
+				args["minagi"]|0,
+				args["maxagi"]|0,
+				args["minluck"]|0,
+				args["maxluck"]|0];
 	};
 
 	function MEMZ_IA_generateParams(array=MEMZ_IA_defaultChangeParamVariability)
