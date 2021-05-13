@@ -257,9 +257,9 @@ if (Imported.ME_CopyActor)
 				MEMZ_IA_getParam("maxluck")];
 	};
 
-	function MEMZ_IA_GetParams(args)
+	function MEMZ_IA_GetParams(args=[0])
 	{ // hacer 0 defaults
-		
+		if (args&&args.length>1)
 		return [args["minhp"]|0,
 				args["maxhp"]|0,
 				args["minmp"]|0,
@@ -276,6 +276,8 @@ if (Imported.ME_CopyActor)
 				args["maxagi"]|0,
 				args["minluck"]|0,
 				args["maxluck"]|0];
+		else
+			return MEMZ_IA_GetDefaultParams
 	};
 
 	function MEMZ_IA_generateParams(array=MEMZ_IA_defaultChangeParamVariability)
