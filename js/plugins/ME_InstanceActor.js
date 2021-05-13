@@ -1,7 +1,7 @@
 /*:
  * Version 1.0.0
  * @target MZ
- * Last update 27/04/21
+ * Last update 13/05/21
  * @author myenemy
  * @plugindesc This plugin allows you to create actors with specific variety of extra parameters
  * @help
@@ -161,6 +161,9 @@
  *
  * ==============================================
  *
+ * @Planned updates
+ *  - Add uses of percentages instead raw numbers
+ *  - Making sure MHP can't be 0
  *
  */
 
