@@ -1,7 +1,7 @@
 /*:
  * Version 1.0.0
  * @target MZ
- * Last update 27/04/21
+ * Last update 13/05/21
  * @author myenemy
  * @plugindesc This plugin allows you to create actors with specific variety of extra parameters
  * @help
@@ -68,7 +68,7 @@
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min MAt!.
  * 
- * @param mimde
+ * @param minmde
  * @text Min MDe bonus
  * @type Number
  * @default -10
@@ -161,6 +161,9 @@
  *
  * ==============================================
  *
+ * @Planned updates
+ *  - Add uses of percentages instead raw numbers
+ *  - Making sure MHP can't be 0
  *
  */
 
@@ -170,14 +173,13 @@ Imported.ME_InstanceActors = "1.0.0";
 if (Imported.ME_CopyActor)
 {
 
-	var MEMZ_IA_defaultChangeParamVariability=MEMZ_IA_GetDefaultParams();
+	const MEMZ_IA_defaultChangeParamVariability=MEMZ_IA_GetDefaultParams(); //So it's run once
 	var MEMZ_IA_GameActorSetup = Game_Actor.prototype.setup;
 
 
 
 	Game_Actor.prototype.setup = function(actorId) {
 		MEMZ_IA_GameActorSetup.call(this,actorId);
-		this._instanceActorId = 0;
 		this._bv=[];
 	};
 
@@ -209,22 +211,21 @@ if (Imported.ME_CopyActor)
 				x=Number.parseInt(x);
 				y=Number.parseInt(y);
 				
-				$gameActors.actor(y).generateActor(x, args.splice(2));
+				$gameActors.actor(y).generateActor(x, MEMZ_IA_GetParams(args));
 				
 			}
 		}
 	});
 
-
-
-	Game_Actor.prototype.generateActor = function(target,array=MEMZ_IA_generateParams())
+	Game_Actor.prototype.generateActor = function(target,array=MEMZ_IA_defaultChangeParamVariability)
 	{
 		this.copyActor(target);
-		this._instanceActorId=$gameInstanceActors.length;
-		this._bv = array;
+		this._bv = MEMZ_IA_generateParams(array);
+		
 		for (var i = 0;i<this._bv.length;i++)
 		{
 			this.addParam(i, this._bv[i]);
+			console.log(this._bv[i]);
 		}
 		if(this._bv[0]>0)
 		{
@@ -236,34 +237,35 @@ if (Imported.ME_CopyActor)
 		}
 	};
 
-
-	function MEMZ_IA_GetDefaultParams()
+	function MEMZ_IA_GetParams(args)
 	{
-		
-		return [MEMZ_IA_getParam("minhp"),
-				MEMZ_IA_getParam("maxhp"),
-				MEMZ_IA_getParam("minmp"),
-				MEMZ_IA_getParam("maxmp"),
-				MEMZ_IA_getParam("minatk"),
-				MEMZ_IA_getParam("maxatk"),
-				MEMZ_IA_getParam("mindef"),
-				MEMZ_IA_getParam("maxdef"),
-				MEMZ_IA_getParam("minmat"),
-				MEMZ_IA_getParam("maxmat"),
-				MEMZ_IA_getParam("minmde"),
-				MEMZ_IA_getParam("maxmde"),
-				MEMZ_IA_getParam("minagi"),
-				MEMZ_IA_getParam("maxagi"),
-				MEMZ_IA_getParam("minluck"),
-				MEMZ_IA_getParam("maxluck")];
+		if (args)
+		return [args["Min HP"]|0,
+				args["Max HP"]|0,
+				args["Min MP"]|0,
+				args["Max MP"]|0,
+				args["Min ATK"]|0,
+				args["Max ATK"]|0,
+				args["Min DEF"]|0,
+				args["Max DEF"]|0,
+				args["Min MAT"]|0,
+				args["Max MAT"]|0,
+				args["Min MDE"]|0,
+				args["Max MDE"]|0,
+				args["Min Agi"]|0,
+				args["Max Agi"]|0,
+				args["Min Luck"]|0,
+				args["Max Luck"]|0];
+		else
+			return MEMZ_IA_defaultChangeParamVariability;
 	};
 
-	function MEMZ_IA_generateParams(array=MEMZ_IA_defaultChangeParamVariability)
+	function MEMZ_IA_generateParams(array)
 	{
 		var aux=[];
-		for (var i=0;i<array.length-1;i++)
+		for (var i=0;i<array.length-1;i+=2)
 		{
-			aux.push(MEMZ_IA_generateParam(array[i++],array[i]));
+			aux.push(MEMZ_IA_generateParam(array[i],array[i+1]));
 		}
 		return aux;
 	};
@@ -273,12 +275,32 @@ if (Imported.ME_CopyActor)
 		if ((!left&&left!==0)||(!right&&right!==0)||left>right)
 			return 0;
 		else
-			return Math.floor(Math.random()* (right-left))+left;
+			return Math.floor(Math.random() * (right-left))+left;
 	}
 
 	function MEMZ_IA_getParam (name)
 	{
 		var parameters = PluginManager.parameters('ME_InstanceActor');
 		return parseInt(parameters[name]);
+	};
+
+	function MEMZ_IA_GetDefaultParams()
+	{
+		return [MEMZ_IA_getParam("minhp")|0,
+				MEMZ_IA_getParam("maxhp")|0,
+				MEMZ_IA_getParam("minmp")|0,
+				MEMZ_IA_getParam("maxmp")|0,
+				MEMZ_IA_getParam("minatk")|0,
+				MEMZ_IA_getParam("maxatk")|0,
+				MEMZ_IA_getParam("mindef")|0,
+				MEMZ_IA_getParam("maxdef")|0,
+				MEMZ_IA_getParam("minmat")|0,
+				MEMZ_IA_getParam("maxmat")|0,
+				MEMZ_IA_getParam("minmde")|0,
+				MEMZ_IA_getParam("maxmde")|0,
+				MEMZ_IA_getParam("minagi")|0,
+				MEMZ_IA_getParam("maxagi")|0,
+				MEMZ_IA_getParam("minluck")|0,
+				MEMZ_IA_getParam("maxluck")|0];
 	};
 }
