@@ -3,5 +3,5 @@
 var $plugins =
 [
 {"name":"ME_CopyActor","status":true,"description":"This plugin allows you to equip items as party members","parameters":{}},
-{"name":"ME_InstanceActor","status":true,"description":"This plugin allows you to create actors with specific variety of extra parameters","parameters":{"minhp":"-400","maxhp":"400","minmp":"-200","maxmp":"200","minatk":"-40","maxatk":"40","mindef":"-40","maxdef":"40","minmat":"-40","maxmat":"40","mimde":"-40","maxmde":"40","minagi":"-40","maxagi":"40","minluck":"-40","maxluck":"40"}}
+{"name":"ME_InstanceActor","status":true,"description":"This plugin allows you to create actors with specific variety of extra parameters","parameters":{"minhp":"-200","maxhp":"200","minmp":"-100","maxmp":"100","minatk":"-10","maxatk":"10","mindef":"-10","maxdef":"10","minmat":"-10","maxmat":"10","minmde":"-10","maxmde":"10","minagi":"-10","maxagi":"10","minluck":"-10","maxluck":"10"}}
 ];

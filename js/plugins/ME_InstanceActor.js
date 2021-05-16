@@ -132,11 +132,6 @@
  * @arg Max Luck
  * @desc Generate actor X on actor Y, overriding the default settings
  * 
- * @command add
- * @text Add character
- * @arg InstanceActorID
- * @desc Add an actor based on the ID in the list.
- * 
  * 
  * ==============================================
  * @Terms of use
