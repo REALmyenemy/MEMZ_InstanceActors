@@ -1,7 +1,7 @@
 /*:
  * Version 1.0.0
  * @target MZ
- * Last update 13/05/21
+ * Last update 15/05/21
  * @author myenemy
  * @plugindesc This plugin allows you to create actors with specific variety of extra parameters
  * @help
@@ -225,7 +225,6 @@ if (Imported.ME_CopyActor)
 		for (var i = 0;i<this._bv.length;i++)
 		{
 			this.addParam(i, this._bv[i]);
-			console.log(this._bv[i]);
 		}
 		if(this._bv[0]>0)
 		{

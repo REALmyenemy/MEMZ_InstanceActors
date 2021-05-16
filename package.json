@@ -3,7 +3,7 @@
     "main": "index.html",
     "chromium-args": "--force-color-profile=srgb",
     "window": {
-        "title": "ME_InstanceActor",
+        "title": "ME_InstanceActor demo",
         "width": 816,
         "height": 624,
         "position": "center",
