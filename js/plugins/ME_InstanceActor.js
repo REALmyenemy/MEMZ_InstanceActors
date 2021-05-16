@@ -1,7 +1,7 @@
 /*:
- * Version 1.0.0
+ * Version 1.1.0
  * @target MZ
- * Last update 15/05/21
+ * Last update 16/05/21
  * @author myenemy
  * @plugindesc This plugin allows you to create actors with specific variety of extra parameters
  * @help
@@ -10,97 +10,81 @@
  * 
  * @param minhp
  * @text Min MHP bonus
- * @type Number
  * @default -200
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxhp
  * @text Max MHP bonus
- * @type Number
  * @default 200
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min HP!.
  * 
  * @param minmp
  * @text Min MMP bonus
- * @type Number
  * @default -100
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxmp
  * @text Max MMP bonus
- * @type Number
  * @default 100
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min HP!
  * 
  * @param minatk
  * @text Min ATK bonus
- * @type Number
  * @default -10
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxatk
  * @text Max ATK bonus
- * @type Number
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min ATK!
  * 
  * @param mindef
  * @text Min Def bonus
- * @type Number
  * @default -10
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxdef
  * @text Max Def bonus
- * @type Number
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min Def!
  * 
  * @param minmat
  * @text Min MAt bonus
- * @type Number
  * @default -10
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxmat
  * @text Max MAt bonus
- * @type Number
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min MAt!.
  * 
  * @param minmde
  * @text Min MDe bonus
- * @type Number
  * @default -10
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxmde
  * @text Max MDe bonus
- * @type Number
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min MDe!.
  * 
  * @param minagi
  * @text Min Agility bonus
- * @type Number
  * @default -10
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxagi
  * @text Max Agility bonus
- * @type Number
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min Agility!.
  * 
  * @param minluck
  * @text Min Luck bonus
- * @type Number
  * @default -10
  * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxluck
  * @text Max Luck bonus
- * @type Number
  * @default 10
  * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min Luck!.
  * 
@@ -132,7 +116,29 @@
  * @arg Max Luck
  * @desc Generate actor X on actor Y, overriding the default settings
  * 
+ * @command customnonzero
+ * @text Generate custom nonZero actor
+ * @arg Copy Id
+ * @arg Paste Id
+ * @arg Min HP
+ * @arg Max HP
+ * @arg Min MP
+ * @arg Max MP
+ * @arg Min ATK
+ * @arg Max ATK
+ * @arg Min DEF
+ * @arg Max DEF
+ * @arg Min MAT
+ * @arg Max MAT
+ * @arg Min MDE
+ * @arg Max MDE
+ * @arg Min Agi
+ * @arg Max Agi
+ * @arg Min Luck
+ * @arg Max Luck
+ * @desc Just like custom actor, but defaults to plugin parameters
  * 
+ 
  * ==============================================
  * @Terms of use
  * - Common:
@@ -156,14 +162,16 @@
  *
  * ==============================================
  *
- * @Planned updates
- *  - Add uses of percentages instead raw numbers
- *  - Making sure MHP can't be 0
- *
+ * 
+ * //Frentes:
+ * 1. Letra+numero=usar variable
+ * -2. Numero+%=usar porcentage
+ * 3. Generación no 0
+ * 4. Usar variable como selección
  */
 
 var Imported = Imported || {};
-Imported.ME_InstanceActors = "1.0.0";
+Imported.ME_InstanceActors = "1.1.0";
 
 if (Imported.ME_CopyActor)
 {
@@ -205,56 +213,57 @@ if (Imported.ME_CopyActor)
 			{
 				x=Number.parseInt(x);
 				y=Number.parseInt(y);
-				
+				console.log(args)
 				$gameActors.actor(y).generateActor(x, MEMZ_IA_GetParams(args));
 				
 			}
 		}
 	});
 
-	Game_Actor.prototype.generateActor = function(target,array=MEMZ_IA_defaultChangeParamVariability)
+	//Functionality
+	Game_Actor.prototype.generateBV = function(array)
 	{
-		this.copyActor(target);
-		this._bv = MEMZ_IA_generateParams(array);
-		
-		for (var i = 0;i<this._bv.length;i++)
-		{
-			this.addParam(i, this._bv[i]);
-		}
-		if(this._bv[0]>0)
-		{
-			this.gainHp(this._bv[0]);
-		}
-		if(this._bv[1]>0)
-		{
-			this.gainMp(this._bv[1]);
-		}
-	};
+		var i=0;
+		aux =[this.createBV("mhp",array[i++]),this.createBV("mhp",array[i++]),
+			this.createBV("mmp",array[i++]),this.createBV("mmp",array[i++]),
+			this.createBV("atk",array[i++]),this.createBV("atk",array[i++]),
+			this.createBV("def",array[i++]),this.createBV("def",array[i++]),
+			this.createBV("mat",array[i++]),this.createBV("mat",array[i++]),
+			this.createBV("mde",array[i++]),this.createBV("mde",array[i++]),
+			this.createBV("agi",array[i++]),this.createBV("agi",array[i++]),
+			this.createBV("luk",array[i++]),this.createBV("luk",array[i++])];
+		return aux;
+	}
 
-	function MEMZ_IA_GetParams(args)
+	Game_Actor.prototype.createBV = function (stat,value)
 	{
-		if (args)
-		return [args["Min HP"]|0,
-				args["Max HP"]|0,
-				args["Min MP"]|0,
-				args["Max MP"]|0,
-				args["Min ATK"]|0,
-				args["Max ATK"]|0,
-				args["Min DEF"]|0,
-				args["Max DEF"]|0,
-				args["Min MAT"]|0,
-				args["Max MAT"]|0,
-				args["Min MDE"]|0,
-				args["Max MDE"]|0,
-				args["Min Agi"]|0,
-				args["Max Agi"]|0,
-				args["Min Luck"]|0,
-				args["Max Luck"]|0];
+		console.log(value)
+		if (isNaN(value))
+		{
+			var finalChange=0;
+
+			if (/[a-zA-Z]/gi.test(value))
+				finalChange=$gameVariables.value[parseInt(value)]; //Check variable value
+			else
+				finalChange=parseFloat(value); //Get raw number
+
+			if (value.contains("%"))
+			{
+				return parseInt(this[stat]*finalChange/100); //Return a percent of the stat
+			}
+			else
+				return finalChange; //Return the raw value
+
+			
+		}
 		else
-			return MEMZ_IA_defaultChangeParamVariability;
-	};
+		{
+			console.log("Number"+value)
+			return value;
+		}
+	}
 
-	function MEMZ_IA_generateParams(array)
+	function MEMZ_IA_RandomizeStats (array)
 	{
 		var aux=[];
 		for (var i=0;i<array.length-1;i+=2)
@@ -262,22 +271,63 @@ if (Imported.ME_CopyActor)
 			aux.push(MEMZ_IA_generateParam(array[i],array[i+1]));
 		}
 		return aux;
-	};
-
-	function MEMZ_IA_generateParam (left, right)
-	{
-		if ((!left&&left!==0)||(!right&&right!==0)||left>right)
-			return 0;
-		else
-			return Math.floor(Math.random() * (right-left))+left;
 	}
 
+	Game_Actor.prototype.generateActor = function(target,array=MEMZ_IA_defaultChangeParamVariability)
+	{
+		this.copyActor(target);
+		this.bvCleanup();
+		this._rbv= array; //So generation gets saved
+		this._bv = MEMZ_IA_RandomizeStats(this.generateBV(array)); //So people can see the result
+		
+		for (var i = 0;i<this._bv.length;i++)
+		{
+			this.addParam(i, this._bv[i]);
+		}
+
+		this.recoverAll();
+	};
+
+	Game_Actor.prototype.bvCleanup = function()
+	{
+		if (this._bv)
+			for (var i=0;i<this._bv.length;i++)
+			{
+				this.addParam([i],(this._bv[i]*-1));
+			}
+	}
+
+	
 	function MEMZ_IA_getParam (name)
 	{
 		var parameters = PluginManager.parameters('ME_InstanceActor');
-		return parseInt(parameters[name]);
+		return parameters[name];
 	};
-
+	
+	function MEMZ_IA_GetParams(args)
+	{
+		if (args)
+		{
+			var aux=[args["Min HP"],args["Max HP"],
+			args["Min MP"],args["Max MP"],
+			args["Min ATK"],args["Max ATK"],
+			args["Min DEF"],args["Max DEF"],
+			args["Min MAT"],args["Max MAT"],
+			args["Min MDE"],args["Max MDE"],
+			args["Min Agi"],args["Max Agi"],
+			args["Min Luck"],args["Max Luck"]];
+			for (var i=0;i<aux.length;i++)
+			{
+				if (!aux[i])
+					aux[i]=0;
+			}
+			return aux;
+		}
+		else
+		return MEMZ_IA_defaultChangeParamVariability;
+	};
+	
+	
 	function MEMZ_IA_GetDefaultParams()
 	{
 		return [MEMZ_IA_getParam("minhp")|0,
@@ -297,4 +347,13 @@ if (Imported.ME_CopyActor)
 				MEMZ_IA_getParam("minluck")|0,
 				MEMZ_IA_getParam("maxluck")|0];
 	};
+
+	function MEMZ_IA_generateParam (left, right)
+	{
+		if ((!left&&left!==0)||(!right&&right!==0)||left>right)
+			return 0;
+		else
+			return parseInt(Math.floor(Math.random() * (right-left))+left);
+	};
+	
 }
