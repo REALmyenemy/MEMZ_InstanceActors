@@ -1,7 +1,7 @@
 /*:
- * Version 1.1.0
+ * Version 1.2.0
  * @target MZ
- * Last update 16/05/21
+ * Last update 11/08/24
  * @author myenemy
  * @plugindesc This plugin allows you to create actors with specific variety of extra parameters
  * @help
@@ -13,6 +13,10 @@
  * You can mix them two, like "P10%" will check the value of variable 10, and it will turn it into a percentage of the stat!
  * 
  * @ChangeLog
+ * 1.2:
+ *  - Compatibilized with CopyActor 1.1.0 and newer, without removing 1.0.0 compatibility
+ *  - Optimized functions.
+ * 
  * 1.1:
  * 	- A lot of early bugfixes
  *  - Added command for generation using default parameters on customized, rather than 0
@@ -176,187 +180,147 @@
  */
 
 var Imported = Imported || {};
-Imported.ME_InstanceActors = "1.1.0";
+Imported.ME_InstanceActors = "1.2.0";
 
-if (Imported.ME_CopyActor)
-{
+if (Imported.ME_CopyActor) {
 
-	const MEMZ_IA_defaultChangeParamVariability=MEMZ_IA_GetDefaultParams(); //So it's run once
-	var MEMZ_IA_GameActorSetup = Game_Actor.prototype.setup;
+	const MEMZ_IA_defaultChangeParamVariability = MEMZ_IA_GetDefaultParams(); //So it's run once
+	let MEMZ_IA_GameActorSetup = Game_Actor.prototype.setup;
 
-	Game_Actor.prototype.setup = function(actorId) {
-		MEMZ_IA_GameActorSetup.call(this,actorId);
-		this._bv=[];
+	Game_Actor.prototype.setup = function (actorId) {
+		MEMZ_IA_GameActorSetup.call(this, actorId);
+		this._bv = [];
 	};
 
 	//Plugin commands
-	PluginManager.registerCommand("ME_InstanceActor","generate",args => {
-		
-		if (args)
-		{
-			var x=checkNumber(args["Copy Id"])
-			var y=checkNumber(args["Paste Id"])
-			if (x&&y)
-			{
-				x=MEMZ_IA_getGameVariables(x);
-				y=MEMZ_IA_getGameVariables(y);
-				
-				$gameActors.actor(y).generateActor(x);
-			}
+	PluginManager.registerCommand("ME_InstanceActor", "generate", args => {
+
+		if (args) {
+			let params = MEMZ_IA_getNewValues(args);
+			if (params)
+				$gameActors.actor(params[1]).generateActor(params[0]);
 		}
 	});
 
-	PluginManager.registerCommand("ME_InstanceActor","custom",args => {
-		
-		if (args)
-		{
-			var x=checkNumber(args["Copy Id"])
-			var y=checkNumber(args["Paste Id"])
-			if (x&&y)
-			{
-				x=MEMZ_IA_getGameVariables(x);
-				y=MEMZ_IA_getGameVariables(y);
-				
-				$gameActors.actor(y).generateActor(x, MEMZ_IA_GetParams(args));
-				
-			}
+	PluginManager.registerCommand("ME_InstanceActor", "custom", args => {
+
+		if (args) {
+
+			let params = MEMZ_IA_getNewValues(args);
+			if (params)
+				$gameActors.actor(params[1]).generateActor(params[0], MEMZ_IA_GetParams(args));
 		}
 	});
 
-	PluginManager.registerCommand("ME_InstanceActor","customnonzero",args => {
-		
-		if (args)
-		{
-			var x=checkNumber(args["Copy Id"])
-			var y=checkNumber(args["Paste Id"])
-			if (x&&y)
-			{
-				x=MEMZ_IA_getGameVariables(x);
-				y=MEMZ_IA_getGameVariables(y);
-				
-				$gameActors.actor(y).generateActor(x, MEMZ_IA_GetInitialParams(args));
-				
-			}
+	PluginManager.registerCommand("ME_InstanceActor", "customnonzero", args => {
+
+		if (args) {
+			let params = MEMZ_IA_getNewValues(args);
+			if (params)
+
+				$gameActors.actor(params[1]).generateActor(params[0], MEMZ_IA_GetInitialParams(args));
+
+
 		}
 	});
-	
+
 
 	//Functionality
-	Game_Actor.prototype.generateBV = function(array)
-	{
-		var i=0;
-		return [this.createBV("mhp",array[i++]),this.createBV("mhp",array[i++]),
-			this.createBV("mmp",array[i++]),this.createBV("mmp",array[i++]),
-			this.createBV("atk",array[i++]),this.createBV("atk",array[i++]),
-			this.createBV("def",array[i++]),this.createBV("def",array[i++]),
-			this.createBV("mat",array[i++]),this.createBV("mat",array[i++]),
-			this.createBV("mde",array[i++]),this.createBV("mde",array[i++]),
-			this.createBV("agi",array[i++]),this.createBV("agi",array[i++]),
-			this.createBV("luk",array[i++]),this.createBV("luk",array[i++])];
+	Game_Actor.prototype.generateBV = function (array) {
+		var i = 0;
+		return [this.createBV("mhp", array[i++]), this.createBV("mhp", array[i++]),
+		this.createBV("mmp", array[i++]), this.createBV("mmp", array[i++]),
+		this.createBV("atk", array[i++]), this.createBV("atk", array[i++]),
+		this.createBV("def", array[i++]), this.createBV("def", array[i++]),
+		this.createBV("mat", array[i++]), this.createBV("mat", array[i++]),
+		this.createBV("mde", array[i++]), this.createBV("mde", array[i++]),
+		this.createBV("agi", array[i++]), this.createBV("agi", array[i++]),
+		this.createBV("luk", array[i++]), this.createBV("luk", array[i++])];
 	}
 
-	Game_Actor.prototype.createBV = function (stat,value)
-	{
-		if (isNaN(value))
-		{
-			var finalChange=0;
-			
-			if (isNaN(value.replace("%","")))
-			{
-				finalChange=MEMZ_IA_getGameVariables(value); //Check variable value
+	Game_Actor.prototype.createBV = function (stat, value) {
+		if (isNaN(value)) {
+			let finalChange = 0;
+
+			if (isNaN(value.replace("%", ""))) {
+				finalChange = MEMZ_IA_getGameVariables(value); //Check variable value
 			}
-			else
-			{
-				finalChange=parseFloat(value); //Get raw number
+			else {
+				finalChange = parseFloat(value); //Get raw number
 			}
-			
-			if (value.contains("%"))
-			{
-				return parseInt(this[stat]*finalChange/100); //Return a percent of the stat
+
+			if (value.contains("%")) {
+				return parseInt(this[stat] * finalChange / 100); //Return a percent of the stat
 			}
-			else
-			{
+			else {
 				return finalChange; //Return the raw value
 			}
 		}
-		else
-		{
+		else {
 			return value;
 		}
 	}
 
-	function MEMZ_IA_RandomizeStats (array)
-	{
-		var aux=[];
-		for (var i=0;i<array.length-1;i+=2)
-		{
-			aux.push(MEMZ_IA_generateParam(array[i],array[i+1]));
+	function MEMZ_IA_RandomizeStats(array) {
+		let aux = [];
+		for (var i = 0; i < array.length - 1; i += 2) {
+			aux.push(MEMZ_IA_generateParam(array[i], array[i + 1]));
 		}
-		
+
 		return aux;
 	}
 
-	Game_Actor.prototype.generateActor = function(target,array=MEMZ_IA_defaultChangeParamVariability)
-	{
+	Game_Actor.prototype.generateActor = function (target, array = MEMZ_IA_defaultChangeParamVariability) {
 		this.copyActor(target);
 		this.bvCleanup();
-		this._rbv= array; //So generation gets saved
+		this._rbv = array; //So generation gets saved
 		this._bv = MEMZ_IA_RandomizeStats(this.generateBV(array)); //So people can see the result
-		
-		for (var i = 0;i<this._bv.length;i++)
-		{
+
+		for (let i = 0; i < this._bv.length; i++) {
 			this.addParam(i, this._bv[i]);
 		}
 
 		this.recoverAll();
 	};
 
-	Game_Actor.prototype.bvCleanup = function()
-	{
+	Game_Actor.prototype.bvCleanup = function () {
 		if (this._bv)
-			for (var i=0;i<this._bv.length;i++)
-			{
-				this.addParam([i],(this._bv[i]*-1));
+			for (let i = 0; i < this._bv.length; i++) {
+				this.addParam([i], (this._bv[i] * -1));
 			}
 	}
 
-	
-	function MEMZ_IA_getParam (name)
-	{
-		var parameters = PluginManager.parameters('ME_InstanceActor');
+
+	function MEMZ_IA_getParam(name) {
+		let parameters = PluginManager.parameters('ME_InstanceActor');
 		return parameters[name];
 	};
-	
-	function MEMZ_IA_GetParams(args)
-	{
-		if (args)
-		{
-			var aux=[
-				args["Min HP"],		args["Max HP"],
-				args["Min MP"],		args["Max MP"],
-				args["Min ATK"],	args["Max ATK"],
-				args["Min DEF"],	args["Max DEF"],
-				args["Min MAT"],	args["Max MAT"],
-				args["Min MDE"],	args["Max MDE"],
-				args["Min Agi"],	args["Max Agi"],
-				args["Min Luck"],	args["Max Luck"]
+
+	function MEMZ_IA_GetParams(args) {
+		if (args) {
+			let aux = [
+				args["Min HP"], args["Max HP"],
+				args["Min MP"], args["Max MP"],
+				args["Min ATK"], args["Max ATK"],
+				args["Min DEF"], args["Max DEF"],
+				args["Min MAT"], args["Max MAT"],
+				args["Min MDE"], args["Max MDE"],
+				args["Min Agi"], args["Max Agi"],
+				args["Min Luck"], args["Max Luck"]
 			];
-			for (var i=0;i<aux.length;i++)
-			{
+			for (let i = 0; i < aux.length; i++) {
 				if (!aux[i])
-					aux[i]=0;
+					aux[i] = 0;
 			}
 			return aux;
 		}
 		else
-		return MEMZ_IA_defaultChangeParamVariability;
+			return MEMZ_IA_defaultChangeParamVariability;
 	};
 
-	function MEMZ_IA_GetInitialParams(args)
-	{
-		if (args)
-		{
-			var aux=[];
+	function MEMZ_IA_GetInitialParams(args) {
+		if (args) {
+			let aux = [];
 			aux.push(args["Min HP"] ? args["Min HP"] : MEMZ_IA_GetParams("minhp"));
 			aux.push(args["Max HP"] ? args["Max HP"] : MEMZ_IA_GetParams("maxhp"));
 			aux.push(args["Min MP"] ? args["Min MP"] : MEMZ_IA_GetParams("minmp"));
@@ -375,61 +339,76 @@ if (Imported.ME_CopyActor)
 			aux.push(args["Max AGI"] ? args["Max AGI"] : MEMZ_IA_GetParams("maxagi"));
 			aux.push(args["Min Luck"] ? args["Min Luck"] : MEMZ_IA_GetParams("minluck"));
 			aux.push(args["Max Luck"] ? args["Max Luck"] : MEMZ_IA_GetParams("maxluck"));
-			for (var i=0;i<aux.length;i++)
-			{
+			for (let i = 0; i < aux.length; i++) {
 				if (!aux[i])
-					aux[i]=0;
+					aux[i] = 0;
 			}
 			return aux;
 		}
 		else
-		return MEMZ_IA_defaultChangeParamVariability;
-	};
-	
-	
-	function MEMZ_IA_GetDefaultParams()
-	{
-		return [MEMZ_IA_getParam("minhp")|0,
-				MEMZ_IA_getParam("maxhp")|0,
-				MEMZ_IA_getParam("minmp")|0,
-				MEMZ_IA_getParam("maxmp")|0,
-				MEMZ_IA_getParam("minatk")|0,
-				MEMZ_IA_getParam("maxatk")|0,
-				MEMZ_IA_getParam("mindef")|0,
-				MEMZ_IA_getParam("maxdef")|0,
-				MEMZ_IA_getParam("minmat")|0,
-				MEMZ_IA_getParam("maxmat")|0,
-				MEMZ_IA_getParam("minmde")|0,
-				MEMZ_IA_getParam("maxmde")|0,
-				MEMZ_IA_getParam("minagi")|0,
-				MEMZ_IA_getParam("maxagi")|0,
-				MEMZ_IA_getParam("minluck")|0,
-				MEMZ_IA_getParam("maxluck")|0];
+			return MEMZ_IA_defaultChangeParamVariability;
 	};
 
-	function MEMZ_IA_generateParam (left, right)
-	{
-		if ((!left&&left!==0)||(!right&&right!==0)||left>right)
+
+	function MEMZ_IA_GetDefaultParams() {
+		return [MEMZ_IA_getParam("minhp") | 0,
+		MEMZ_IA_getParam("maxhp") | 0,
+		MEMZ_IA_getParam("minmp") | 0,
+		MEMZ_IA_getParam("maxmp") | 0,
+		MEMZ_IA_getParam("minatk") | 0,
+		MEMZ_IA_getParam("maxatk") | 0,
+		MEMZ_IA_getParam("mindef") | 0,
+		MEMZ_IA_getParam("maxdef") | 0,
+		MEMZ_IA_getParam("minmat") | 0,
+		MEMZ_IA_getParam("maxmat") | 0,
+		MEMZ_IA_getParam("minmde") | 0,
+		MEMZ_IA_getParam("maxmde") | 0,
+		MEMZ_IA_getParam("minagi") | 0,
+		MEMZ_IA_getParam("maxagi") | 0,
+		MEMZ_IA_getParam("minluck") | 0,
+		MEMZ_IA_getParam("maxluck") | 0];
+	};
+
+	function MEMZ_IA_generateParam(left, right) {
+		if ((!left && left !== 0) || (!right && right !== 0) || left > right)
 			return 0;
-		else
-		{ //Maybe virtual console limitation, but it didn't work well with floats
-			var random=Math.random();
-			var value=right-left;
-			var result=random*value;
-			var floatstuff=result+left;
-			var final= Math.round(floatstuff) 
+		else { //Maybe virtual console limitation, but it didn't work well with floats
+			let random = Math.random();
+			let value = right - left;
+			let result = random * value;
+			let floatstuff = result + left;
+			let final = Math.round(floatstuff)
 			return final;
 		}
 	};
 
-	function MEMZ_IA_getGameVariables(variable)
-	{
-		if (isNaN(variable))
-		{
+	function MEMZ_IA_getGameVariables(variable) {
+		if (isNaN(variable)) {
 			return $gameVariables.value(variable.match(/(\d+)/)[0]);
 		}
 		else
 			return variable;
 	}
-	
+
+	function MEMZ_IA_getNewValues(args) {
+		let x = 0, y = 0;
+		if (Imported.ME_CopyActor === "1.0.0") {
+			x = checkNumber(args["Copy Id"]);
+			y = checkNumber(args["Paste Id"]);
+
+			if (x && y) {
+				x = MEMZ_IA_getGameVariables(x);
+				y = MEMZ_IA_getGameVariables(y);
+			}
+		}
+		else {
+			x = MEMZ_CA_checkNumber(args["Copy Id"]);
+			y = MEMZ_CA_checkNumber(args["Paste Id"]);
+		}
+		if (x && y)
+			return [parseInt(x), parseInt(y)];
+		else
+			return false;
+	}
+
 }
