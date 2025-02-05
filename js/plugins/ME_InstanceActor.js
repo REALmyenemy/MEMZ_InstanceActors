@@ -1,18 +1,24 @@
 /*:
- * Version 1.2.0
+ * Version 1.3.0
  * @target MZ
- * Last update 11/08/24
+ * Last update 31/01/25
  * @author myenemy
  * @plugindesc This plugin allows you to create actors with specific variety of extra parameters
  * @help
  * This plugin copies an actor, then adds Change Parameter commands randomly. This is similar to systems like to IVs in pokémon, but the value is added raw.
  * You can change the plugin parameters, and the increase/decrease will be applied based of a random number between Min and Max of the same stat.
- * In this update, you can use both, direct input and game variable inputs.
+ * In this version, you can use both, direct input and game variable inputs.
  * To use editor variables, just add any letter next to the number, like "V5" will check variable 5 instead!
  * To add percentages, just place a % symbol!
  * You can mix them two, like "P10%" will check the value of variable 10, and it will turn it into a percentage of the stat!
  * 
  * @ChangeLog
+ * 1.3:
+ *  - Added the option to auto-add the instanced actor into party in the plugin commands "Add immediately".
+ *  - Fixed editor not reading description of plugin commands
+ *  - Unified commands for simplicity.
+ * 	- Fixed two bugs that could lead to crash.
+ * 
  * 1.2:
  *  - Compatibilized with CopyActor 1.1.0 and newer, without removing 1.0.0 compatibility
  *  - Optimized functions.
@@ -22,137 +28,169 @@
  *  - Added command for generation using default parameters on customized, rather than 0
  *  - Now compatible with variables and percentages
  * 
+ * @param stats
+ * @text Default instance settings
+ * 
  * @param minhp
+ * @parent stats
  * @text Min MHP bonus
+ * @type number
  * @default -200
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxhp
+ * @parent stats
  * @text Max MHP bonus
+ * @type number
  * @default 200
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min HP!.
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min HP!.
  * 
  * @param minmp
+ * @parent stats
  * @text Min MMP bonus
+ * @type number
  * @default -100
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxmp
+ * @parent stats
  * @text Max MMP bonus
+ * @type number
  * @default 100
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min HP!
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min HP!
  * 
  * @param minatk
+ * @parent stats
  * @text Min ATK bonus
+ * @type number
  * @default -10
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxatk
+ * @parent stats
  * @text Max ATK bonus
+ * @type number
  * @default 10
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min ATK!
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min ATK!
  * 
  * @param mindef
+ * @parent stats
  * @text Min Def bonus
+ * @type number
  * @default -10
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxdef
+ * @parent stats
  * @text Max Def bonus
+ * @type number
  * @default 10
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min Def!
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min Def!
  * 
  * @param minmat
+ * @parent stats
  * @text Min MAt bonus
+ * @type number
  * @default -10
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxmat
+ * @parent stats
  * @text Max MAt bonus
+ * @type number
  * @default 10
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min MAt!.
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min MAt!.
  * 
  * @param minmde
+ * @parent stats
  * @text Min MDe bonus
+ * @type number
  * @default -10
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxmde
+ * @parent stats
  * @text Max MDe bonus
+ * @type number
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min MDe!.
  * @default 10
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min MDe!.
  * 
  * @param minagi
+ * @parent stats
  * @text Min Agility bonus
+ * @type number
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * @default -10
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxagi
+ * @parent stats
  * @text Max Agility bonus
+ * @type number
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min Agility!.
  * @default 10
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min Agility!.
  * 
  * @param minluck
+ * @parent stats
  * @text Min Luck bonus
+ * @type number
+ * @desc This is the minimal amount the actor can earn generated this way. Negative for decrease.
  * @default -10
- * @desc This is the minimal ammount the actor can earn generated this way. Negative for decrease.
  * 
  * @param maxluck
+ * @parent stats
  * @text Max Luck bonus
+ * @type number
+ * @desc This is the minimal amount the actor can earn generated this way. Always higher than Min Luck!.
  * @default 10
- * @desc This is the minimal ammount the actor can earn generated this way. Always higher than Min Luck!.
  * 
  * @command generate
  * @text Generate actor
- * @arg Copy Id
- * @arg Paste Id
  * @desc Generate actor X on actor Y.
- * 
- * @command custom
- * @text Generate custom actor
  * @arg Copy Id
+ * @type number
  * @arg Paste Id
+ * @type number
+ * @arg Add immediately
+ * @type boolean
+ * @arg Generation type
+ * @type select
+ * @desc Default uses plugin params for empty fields. Empty is zero considers empty slots as if you wrote 0.
+ * @option Default
+ * @option Empty is Zero
+ * @default Default
  * @arg Min HP
+ * @parent Generation type
  * @arg Max HP
+ * @parent Generation type
  * @arg Min MP
+ * @parent Generation type
  * @arg Max MP
+ * @parent Generation type
  * @arg Min ATK
+ * @parent Generation type
  * @arg Max ATK
+ * @parent Generation type
  * @arg Min DEF
+ * @parent Generation type
  * @arg Max DEF
+ * @parent Generation type
  * @arg Min MAT
+ * @parent Generation type
  * @arg Max MAT
+ * @parent Generation type
  * @arg Min MDE
+ * @parent Generation type
  * @arg Max MDE
+ * @parent Generation type
  * @arg Min Agi
+ * @parent Generation type
  * @arg Max Agi
+ * @parent Generation type
  * @arg Min Luck
+ * @parent Generation type
  * @arg Max Luck
- * @desc Generate actor X on actor Y, overriding the default settings
- * 
- * @command customnonzero
- * @text Generate custom nonZero actor
- * @arg Copy Id
- * @arg Paste Id
- * @arg Min HP
- * @arg Max HP
- * @arg Min MP
- * @arg Max MP
- * @arg Min ATK
- * @arg Max ATK
- * @arg Min DEF
- * @arg Max DEF
- * @arg Min MAT
- * @arg Max MAT
- * @arg Min MDE
- * @arg Max MDE
- * @arg Min Agi
- * @arg Max Agi
- * @arg Min Luck
- * @arg Max Luck
- * @desc Just like custom actor, but defaults to plugin parameters
- * 
- 
+ * @parent Generation type
+ *
  * ==============================================
  * @Terms of use
  * - Common:
@@ -180,7 +218,9 @@
  */
 
 var Imported = Imported || {};
-Imported.ME_InstanceActors = "1.2.0";
+Imported.ME_InstanceActors = "1.3.0";
+
+let t1, t2, t3, t4,t5,t6,t7;
 
 if (Imported.ME_CopyActor) {
 
@@ -196,34 +236,26 @@ if (Imported.ME_CopyActor) {
 	PluginManager.registerCommand("ME_InstanceActor", "generate", args => {
 
 		if (args) {
-			let params = MEMZ_IA_getNewValues(args);
-			if (params)
-				$gameActors.actor(params[1]).generateActor(params[0]);
+			let params = MEMZ_IA_getNewValues(args); //Gets [x,y]
+			if (params) {
+				switch (args["Generation type"]) {
+					case "Default to plugin params":
+						$gameActors.actor(params[1]).generateActor(params[0]);
+						break;
+					case "Empty is Zero":
+						$gameActors.actor(params[1]).generateActor(params[0], MEMZ_IA_GetParams(args)); //Directly get from command args or zero
+						break;
+					case "Default":
+						$gameActors.actor(params[1]).generateActor(params[0], MEMZ_IA_GetInitialParams(args)); //Get from args, params, or zero.
+						break;
+				}
+				
+				if (args["Add immediately"]) {
+					$gameParty.addActor(parseInt(params[1]));
+				}
+			}
 		}
 	});
-
-	PluginManager.registerCommand("ME_InstanceActor", "custom", args => {
-
-		if (args) {
-
-			let params = MEMZ_IA_getNewValues(args);
-			if (params)
-				$gameActors.actor(params[1]).generateActor(params[0], MEMZ_IA_GetParams(args));
-		}
-	});
-
-	PluginManager.registerCommand("ME_InstanceActor", "customnonzero", args => {
-
-		if (args) {
-			let params = MEMZ_IA_getNewValues(args);
-			if (params)
-
-				$gameActors.actor(params[1]).generateActor(params[0], MEMZ_IA_GetInitialParams(args));
-
-
-		}
-	});
-
 
 	//Functionality
 	Game_Actor.prototype.generateBV = function (array) {
@@ -250,7 +282,7 @@ if (Imported.ME_CopyActor) {
 			}
 
 			if (value.contains("%")) {
-				return parseInt(this[stat] * finalChange / 100); //Return a percent of the stat
+				return parseInt(this[stat] * finalChange / 100.0); //Return a percent of the stat
 			}
 			else {
 				return finalChange; //Return the raw value
@@ -259,15 +291,6 @@ if (Imported.ME_CopyActor) {
 		else {
 			return value;
 		}
-	}
-
-	function MEMZ_IA_RandomizeStats(array) {
-		let aux = [];
-		for (var i = 0; i < array.length - 1; i += 2) {
-			aux.push(MEMZ_IA_generateParam(array[i], array[i + 1]));
-		}
-
-		return aux;
 	}
 
 	Game_Actor.prototype.generateActor = function (target, array = MEMZ_IA_defaultChangeParamVariability) {
@@ -291,6 +314,15 @@ if (Imported.ME_CopyActor) {
 	}
 
 
+	function MEMZ_IA_RandomizeStats(array) {
+		let aux = [];
+		for (var i = 0; i < array.length - 1; i += 2) {
+			aux.push(MEMZ_IA_generateParam(array[i], array[i + 1]));
+		}
+
+		return aux;
+	}
+
 	function MEMZ_IA_getParam(name) {
 		let parameters = PluginManager.parameters('ME_InstanceActor');
 		return parameters[name];
@@ -298,6 +330,7 @@ if (Imported.ME_CopyActor) {
 
 	function MEMZ_IA_GetParams(args) {
 		if (args) {
+
 			let aux = [
 				args["Min HP"], args["Max HP"],
 				args["Min MP"], args["Max MP"],
@@ -321,24 +354,24 @@ if (Imported.ME_CopyActor) {
 	function MEMZ_IA_GetInitialParams(args) {
 		if (args) {
 			let aux = [];
-			aux.push(args["Min HP"] ? args["Min HP"] : MEMZ_IA_GetParams("minhp"));
-			aux.push(args["Max HP"] ? args["Max HP"] : MEMZ_IA_GetParams("maxhp"));
-			aux.push(args["Min MP"] ? args["Min MP"] : MEMZ_IA_GetParams("minmp"));
-			aux.push(args["Max MP"] ? args["Max MP"] : MEMZ_IA_GetParams("maxmp"));
-			aux.push(args["Min ATK"] ? args["Min ATK"] : MEMZ_IA_GetParams("minatk"));
-			aux.push(args["Max ATK"] ? args["Max ATK"] : MEMZ_IA_GetParams("maxatk"));
-			aux.push(args["Min DEF"] ? args["Min DEF"] : MEMZ_IA_GetParams("mindef"));
-			aux.push(args["Max DEF"] ? args["Max DEF"] : MEMZ_IA_GetParams("maxdef"));
-			aux.push(args["Min MAT"] ? args["Min MAT"] : MEMZ_IA_GetParams("minmat"));
-			aux.push(args["Max MAT"] ? args["Max MAT"] : MEMZ_IA_GetParams("maxmat"));
-			aux.push(args["Min MAT"] ? args["Min MAT"] : MEMZ_IA_GetParams("minmat"));
-			aux.push(args["Max MAT"] ? args["Max MAT"] : MEMZ_IA_GetParams("maxmat"));
-			aux.push(args["Min MDE"] ? args["Min MDE"] : MEMZ_IA_GetParams("minmde"));
-			aux.push(args["Max MDE"] ? args["Max MDE"] : MEMZ_IA_GetParams("maxmde"));
-			aux.push(args["Min AGI"] ? args["Min AGI"] : MEMZ_IA_GetParams("minagi"));
-			aux.push(args["Max AGI"] ? args["Max AGI"] : MEMZ_IA_GetParams("maxagi"));
-			aux.push(args["Min Luck"] ? args["Min Luck"] : MEMZ_IA_GetParams("minluck"));
-			aux.push(args["Max Luck"] ? args["Max Luck"] : MEMZ_IA_GetParams("maxluck"));
+			aux.push(args["Min HP"] ? args["Min HP"] : MEMZ_IA_getParam("minhp"));
+			aux.push(args["Max HP"] ? args["Max HP"] : MEMZ_IA_getParam("maxhp"));
+			aux.push(args["Min MP"] ? args["Min MP"] : MEMZ_IA_getParam("minmp"));
+			aux.push(args["Max MP"] ? args["Max MP"] : MEMZ_IA_getParam("maxmp"));
+			aux.push(args["Min ATK"] ? args["Min ATK"] : MEMZ_IA_getParam("minatk"));
+			aux.push(args["Max ATK"] ? args["Max ATK"] : MEMZ_IA_getParam("maxatk"));
+			aux.push(args["Min DEF"] ? args["Min DEF"] : MEMZ_IA_getParam("mindef"));
+			aux.push(args["Max DEF"] ? args["Max DEF"] : MEMZ_IA_getParam("maxdef"));
+			aux.push(args["Min MAT"] ? args["Min MAT"] : MEMZ_IA_getParam("minmat"));
+			aux.push(args["Max MAT"] ? args["Max MAT"] : MEMZ_IA_getParam("maxmat"));
+			aux.push(args["Min MAT"] ? args["Min MAT"] : MEMZ_IA_getParam("minmat"));
+			aux.push(args["Max MAT"] ? args["Max MAT"] : MEMZ_IA_getParam("maxmat"));
+			aux.push(args["Min MDE"] ? args["Min MDE"] : MEMZ_IA_getParam("minmde"));
+			aux.push(args["Max MDE"] ? args["Max MDE"] : MEMZ_IA_getParam("maxmde"));
+			aux.push(args["Min AGI"] ? args["Min AGI"] : MEMZ_IA_getParam("minagi"));
+			aux.push(args["Max AGI"] ? args["Max AGI"] : MEMZ_IA_getParam("maxagi"));
+			aux.push(args["Min Luck"] ? args["Min Luck"] : MEMZ_IA_getParam("minluck"));
+			aux.push(args["Max Luck"] ? args["Max Luck"] : MEMZ_IA_getParam("maxluck"));
 			for (let i = 0; i < aux.length; i++) {
 				if (!aux[i])
 					aux[i] = 0;
@@ -349,30 +382,31 @@ if (Imported.ME_CopyActor) {
 			return MEMZ_IA_defaultChangeParamVariability;
 	};
 
-
 	function MEMZ_IA_GetDefaultParams() {
 		return [MEMZ_IA_getParam("minhp") | 0,
-		MEMZ_IA_getParam("maxhp") | 0,
-		MEMZ_IA_getParam("minmp") | 0,
-		MEMZ_IA_getParam("maxmp") | 0,
-		MEMZ_IA_getParam("minatk") | 0,
-		MEMZ_IA_getParam("maxatk") | 0,
-		MEMZ_IA_getParam("mindef") | 0,
-		MEMZ_IA_getParam("maxdef") | 0,
-		MEMZ_IA_getParam("minmat") | 0,
-		MEMZ_IA_getParam("maxmat") | 0,
-		MEMZ_IA_getParam("minmde") | 0,
-		MEMZ_IA_getParam("maxmde") | 0,
-		MEMZ_IA_getParam("minagi") | 0,
-		MEMZ_IA_getParam("maxagi") | 0,
-		MEMZ_IA_getParam("minluck") | 0,
-		MEMZ_IA_getParam("maxluck") | 0];
+		MEMZ_IA_getParam("maxhp") || 0,
+		MEMZ_IA_getParam("minmp") || 0,
+		MEMZ_IA_getParam("maxmp") || 0,
+		MEMZ_IA_getParam("minatk") || 0,
+		MEMZ_IA_getParam("maxatk") || 0,
+		MEMZ_IA_getParam("mindef") || 0,
+		MEMZ_IA_getParam("maxdef") || 0,
+		MEMZ_IA_getParam("minmat") || 0,
+		MEMZ_IA_getParam("maxmat") || 0,
+		MEMZ_IA_getParam("minmde") || 0,
+		MEMZ_IA_getParam("maxmde") || 0,
+		MEMZ_IA_getParam("minagi") || 0,
+		MEMZ_IA_getParam("maxagi") || 0,
+		MEMZ_IA_getParam("minluck") || 0,
+		MEMZ_IA_getParam("maxluck") || 0];
 	};
 
 	function MEMZ_IA_generateParam(left, right) {
 		if ((!left && left !== 0) || (!right && right !== 0) || left > right)
 			return 0;
 		else { //Maybe virtual console limitation, but it didn't work well with floats
+			left = parseFloat(left);
+			right = parseFloat(right);
 			let random = Math.random();
 			let value = right - left;
 			let result = random * value;
@@ -382,7 +416,7 @@ if (Imported.ME_CopyActor) {
 		}
 	};
 
-	function MEMZ_IA_getGameVariables(variable) {
+	function MEMZ_IA_getGameVariables(variable) { //If alpha, return editor var.
 		if (isNaN(variable)) {
 			return $gameVariables.value(variable.match(/(\d+)/)[0]);
 		}

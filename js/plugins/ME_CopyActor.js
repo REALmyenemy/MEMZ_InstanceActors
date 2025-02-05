@@ -1,79 +1,81 @@
 /*:
 * @target MZ
- * Version 1.1.0
- * Last update 11/08/24
+ * Version 1.2.0
+ * Last update 31/01/25
  * @author myenemy
  * @plugindesc This plugin allows you to copy the features of any actor into another
  * @help
  * With this plugin, you can use plugin commands as well as script calls to copy
- * parts of the entirety of an actor inot another!
+ * parts of the entirety of an actor into another!
  * 
  * 
  * @command copy
  * @text Copy actor
+ * @desc Copy actor X on actor Y (everything)
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy actor X on actor Y (everything)
+ * @arg Add immediately
+ * @type boolean
  * 
  * @command class
  * @text Copy class
+ * @desc Copy the class actor X has on actor Y
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the class actor X has on actor Y
  * 
  * @command params
  * @text Copy params
+ * @desc Copy the params actor X has on actor Y
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the params actor X has on actor Y
  * 
  * @command skills
  * @text Copy skills
+ * @desc Copy the skills actor X has on actor Y
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the skills actor X has on actor Y
  * 
  * @command stats
  * @text Copy bars
+ * @desc Copy HP, MP and TP from actor X on actor Y
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy HP, MP and TP from actor X on actor Y
  *
  * @command states
  * @text Copy states
+ * @desc Copy the states actor X has on actor Y
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the states actor X has on actor Y
  * 
  * @command buffs
  * @text Copy buffs
+ * @desc Copy the buffs actor X has on actor Y (timers too)
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the buffs actor X has on actor Y (timers too)
  * 
  * @command looks
+ * @desc Copy the looks actor X has on actor Y
  * @text Copy looks
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the looks actor X has on actor Y
  *
  * @command name
+ * @desc Copy the name actor X has on actor Y
  * @text Copy name
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the name actor X has on actor Y
  *
  * @command nickname
+ * @desc Copy the nickname actor X has on actor Y
  * @text Copy nickname
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy the nickname actor X has on actor Y
  *
  * @command names
+ * @desc Copy name and nickname actor X has on actor Y
  * @text Copy names
  * @arg Copy Id
  * @arg Paste Id
- * @desc Copy name and nickname actor X has on actor Y
  *
  * 
  * 
@@ -157,7 +159,7 @@
  */
 
 var Imported = Imported || {};
-Imported.ME_CopyActor = "1.1.0";
+Imported.ME_CopyActor = "1.2.0";
 
 PluginManager.registerCommand("ME_CopyActor", "copy", args => {
 
@@ -169,6 +171,9 @@ PluginManager.registerCommand("ME_CopyActor", "copy", args => {
 			y = Number.parseInt(y);
 
 			$gameActors.actor(y).copyActor(x);
+			if (args["Add Immediately"]) {
+				$gameParty.addActor(y);
+			}
 		}
 	}
 });
@@ -312,10 +317,10 @@ PluginManager.registerCommand("ME_CopyActor", "names", args => {
 	}
 });
 
+
 let MEMZ_CA_checkNumber = function (variable) {
 	try {
-		if (isNaN(variable))
-		{
+		if (isNaN(variable)) {
 			let varId = variable.match(/.*(\d+).*/)[1];
 			return $gameVariables.value(varId);
 		}
@@ -449,4 +454,5 @@ Game_Actor.prototype.copyActor = function (target) {
 	this.copySkills(target);
 	this.copyLooks(target);
 	this.copyNames(target);
+	this.MEMZ_CA_copyOf = target;
 }
